@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Balles en mouvement</title>
+  <style>
+    body { margin: 0; background: black; overflow: hidden; }
+    canvas { display: block; margin: 0 auto; background: black; }
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const scaleFactor = 0.2;
+  const speed = 4;
+
+  // Liste des images disponibles
+  const imageSources = [
+    'circle_did_153.png',
+    '/blason/blason.png',
+    '/steph/steph.png',
+    '/slaw/slaw.png'
+  ];
+
+  // Angles diagonaux : π/4, 3π/4, 5π/4, 7π/4
+  const diagonalAngles = [Math.PI / 4, 3 * Math.PI / 4, 5 * Math.PI / 4, 7 * Math.PI / 4];
+
+  // Fonction pour mélanger un tableau (Fisher-Yates)
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // Création des balles
+  const balls = [];
+  const shuffledImages = shuffle([...imageSources]);
+  const shuffledAngles = shuffle([...diagonalAngles]);
+
+  for (let i = 0; i < 4; i++) {
+    const img = new Image();
+    img.src = shuffledImages[i];
+    const angle = shuffledAngles[i];
+    balls.push({
+      img: img,
+      src: shuffledImages[i],
+      x: 100 + i * 150,
+      y: 100 + i * 100,
+      angle: angle,
+      speedX: speed * Math.cos(angle),
+      speedY: speed * Math.sin(angle)
+    });
+  }
+
+  // Attendre le chargement des images
+  let loaded = 0;
+  balls.forEach(ball => {
+    ball.img.onload = () => {
+      loaded++;
+      if (loaded === balls.length) {
+        requestAnimationFrame(gameLoop);
+      }
+    };
+  });
+
+  function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const baseSize = Math.min(canvas.width, canvas.height);
+
+    balls.forEach(ball => {
+      const ballWidth = baseSize * scaleFactor;
+      const ballHeight = (ball.img.height / ball.img.width) * ballWidth;
+
+      // Déplacement
+      ball.x += ball.speedX;
+      ball.y += ball.speedY;
+
+      // Rebond sur les bords
+      if (ball.x < 0 || ball.x + ballWidth > canvas.width) {
+        ball.speedX = -ball.speedX;
+        ball.x = Math.max(0, Math.min(ball.x, canvas.width - ballWidth));
+      }
+      if (ball.y < 0 || ball.y + ballHeight > canvas.height) {
+        ball.speedY = -ball.speedY;
+        ball.y = Math.max(0, Math.min(ball.y, canvas.height - ballHeight));
+      }
+
+      ctx.drawImage(ball.img, ball.x, ball.y, ballWidth, ballHeight);
+    });
+
+    requestAnimationFrame(gameLoop);
+  }
+</script>
+
+</body>
+</html>

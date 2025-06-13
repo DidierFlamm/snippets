@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>version souilled v2</title>
+<style>
+  body { margin: 0; background: black; overflow: hidden; }
+  canvas { display: block; margin: 0 auto; background: black; }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // Optionnel : redessiner ou ajuster le jeu ici après resize
+  }
+
+  // Taille initiale au chargement
+  resizeCanvas();
+
+  // Redimensionner à chaque changement de taille de la fenêtre
+  window.addEventListener('resize', resizeCanvas);
+
+  // Ensuite ton code de jeu utilise canvas.width et canvas.height pour les dimensions
+
+  const ball = new Image();
+  ball.src = 'circle_did_256.png';  // ton image balle
+
+  // Position et vitesse initiale
+  let x = 0;
+  let y = 0;
+  let speedX = 4;
+  let speedY = 4;
+
+  // dimensionnement dynamique de la balle
+  const scaleFactor = 0.2; // 10% de la plus petite dimension
+    ball.onload = function() {
+    requestAnimationFrame(gameLoop);
+  };
+
+  function gameLoop() {
+  
+     // Taille de base selon la plus petite dimension
+    const baseSize = Math.min(canvas.width, canvas.height);
+    const ballWidth = baseSize * scaleFactor;
+    const ballHeight = (ball.height / ball.width) * ballWidth; // respecter les proportions
+    
+    // Déplacement
+    x += speedX;
+    y += speedY;
+
+    // Rebond sur les bords
+    if (x < 0 || x + ballWidth > canvas.width) {
+      speedX = -speedX;
+      x = Math.max(0, Math.min(x, canvas.width - ballWidth));
+    }
+    if (y < 0 || y + ballHeight > canvas.height) {
+      speedY = -speedY;
+      y = Math.max(0, Math.min(y, canvas.height - ballHeight));
+    }
+
+    // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dessiner la balle
+    ctx.drawImage(ball, x, y, ballWidth, ballHeight);
+
+    // Re-demander un nouveau frame (~60fps)
+    requestAnimationFrame(gameLoop);
+  }
+</script>
+
+</body>
+</html>
