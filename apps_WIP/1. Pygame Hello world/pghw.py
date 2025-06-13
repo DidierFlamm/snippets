@@ -1,5 +1,5 @@
 import pygame
-from pygame.locals import *
+from pygame.locals import QUIT
 
 pygame.init()
 # Resolution is ignored on Android

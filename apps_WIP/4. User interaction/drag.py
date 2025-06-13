@@ -1,14 +1,21 @@
-import sys
 import pygame
-from pygame.locals import *
+from pygame.locals import QUIT
 
 pygame.init()
 # Resolution is ignored on Android
-surface = pygame.display.set_mode((640, 480))
+
+# Créer une fenêtre à 2/3 de la résolution actuelle
+info = pygame.display.Info()
+screen_width = info.current_w
+screen_height = info.current_h
+w = int(screen_width * 2 / 3)
+h = int(screen_height * 2 / 3)
+surface = pygame.display.set_mode((w, h))
+
 clock = pygame.time.Clock()
 surfrect = surface.get_rect()
 rect = pygame.Rect((0, 0), (128, 128))
-rect.center = (surfrect.w / 2, surfrect.h / 2)
+rect.center = (surfrect.w // 2, surfrect.h // 2)
 touched = False
 while True:
     for ev in pygame.event.get():
