@@ -1,0 +1,32 @@
+# Virtual environment folder
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Environment variable files
+.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual documents folder
+.virtual_documents/
+
+# Ruff cache
+.ruff_cache/
+
+# CatBoost info folder
+catboost_info/
+
+# Parametres VS Code
+.vscode/
