@@ -49,7 +49,7 @@ PIPES_LIST = (
 )
 
 try:
-    xrange
+    xrange  # type: ignore
 except NameError:
     xrange = range
 
@@ -222,7 +222,7 @@ def mainGame(movementInfo):
     # player velocity, max velocity, downward acceleration, acceleration on flap
     playerVelY = -9  # player's velocity along Y, default same as playerFlapped
     playerMaxVelY = 10  # max vel along Y, max descend speed
-    playerMinVelY = -8  # min vel along Y, max ascend speed
+    playerMinVelY = -8  # min vel along Y, max ascend speed  # noqa: F841
     playerAccY = 1  # players downward acceleration
     playerRot = 45  # player's rotation
     playerVelRot = 3  # angular speed
