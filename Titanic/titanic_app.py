@@ -115,5 +115,5 @@ elif page == pages[2]:
 
     st.write("### Prédictions")
 
-    code = """🚧 Bientôt la possibilité d'évaluer la probabilité en fonction de vos paramètres."""
+    code = """🚧 Bientôt la possibilité d'évaluer la probabilité de survie en fonction de vos paramètres."""
     st.code(code, language="python")
