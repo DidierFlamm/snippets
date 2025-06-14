@@ -14,7 +14,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 # chemin absolu vers le dossier où se trouve le script
 dir_path = os.path.dirname(os.path.realpath(__file__))
-img_path = os.path.join(dir_path, "titanic_c2025df_fuzz10.png")
+img_path = os.path.join(dir_path, "titanic.png")
 
 # url des données au format .csv
 raw_csv = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/titanic.csv"
