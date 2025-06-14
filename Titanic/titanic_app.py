@@ -37,7 +37,7 @@ if page == pages[0]:
     st.image(img_path)
     st.write("")
     st.markdown(
-        "Prédiction de la survie des passagers du Titanic selon les [données](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv) d'un échantillon de 891 passagers"
+        "Prédiction de la survie des passagers du Titanic à partir des [données](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv) d'un échantillon de 891 passagers"
     )
     st.write("")
     st.dataframe(df)
