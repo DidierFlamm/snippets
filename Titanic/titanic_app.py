@@ -68,7 +68,7 @@ elif page == pages[1]:
     sns.countplot(x="Pclass", data=df)
     st.pyplot(fig)
 
-    st.write("### Analyse multivariée (Plotly)")
+    st.write("### Analyse multivariée interactive (Plotly)")
 
     hist = px.histogram(df, x="Survived", color="Sex", barmode="group")
     st.plotly_chart(hist)
