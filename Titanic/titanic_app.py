@@ -58,14 +58,79 @@ if page == pages[0]:
 
 ###################################################################################### page 1
 elif page == pages[1]:
-    st.write("### Analyse univariée (Seaborn)")
+
+    df_display = df.copy()
+    df_display["Sex"] = df_display["Sex"].replace({"female": "Femme", "male": "Homme"})
+    df_display["Survived"] = df_display["Survived"].replace({0: "Non", 1: "Oui"})
+
+    palette = sns.color_palette("RdYlGn", n_colors=3)  # rouge - jaune - vert
+    palette = [palette[2], palette[0]]  # vert et rouge
+
+    st.write("### Analyse univariée")
 
     fig = plt.figure()
-    sns.countplot(x="Survived", data=df)
+    sns.histplot(
+        data=df_display,
+        x="Age",
+        hue="Survived",
+        bins=30,
+        kde=False,
+        palette=palette,
+        multiple="stack",  # pour superposer les courbes
+        alpha=0.6,
+    )
+    plt.xlabel("Âge")
+    plt.ylabel("Densité")
+    plt.title("Distribution continue de l'âge")
+    st.pyplot(fig)
+
+    st.write("### Analyse bivariée")
+
+    fig = plt.figure()
+
+    palette = sns.color_palette("RdYlGn", n_colors=3)  # rouge - jaune - vert
+    palette = [palette[2], palette[0]]  # vert et rouge
+
+    sns.countplot(
+        x="Sex",
+        data=df_display,
+        hue="Survived",
+        order=["Femme", "Homme"],
+        hue_order=["Oui", "Non"],
+        palette=palette,
+        # stat="count",
+        # saturation=0.75,
+    )
     st.pyplot(fig)
 
     fig = plt.figure()
-    sns.countplot(x="Pclass", data=df)
+    sns.countplot(
+        x="Pclass",
+        data=df_display,
+        hue="Survived",
+        hue_order=["Oui", "Non"],
+        palette=palette,
+    )
+    st.pyplot(fig)
+
+    fig = plt.figure()
+    sns.countplot(
+        x="SibSp",
+        data=df_display,
+        hue="Survived",
+        hue_order=["Oui", "Non"],
+        palette=palette,
+    )
+    st.pyplot(fig)
+
+    fig = plt.figure()
+    sns.countplot(
+        x="Parch",
+        data=df_display,
+        hue="Survived",
+        hue_order=["Oui", "Non"],
+        palette=palette,
+    )
     st.pyplot(fig)
 
     st.write("### Analyse multivariée interactive (Plotly)")
