@@ -282,6 +282,10 @@ elif page == pages[3]:
         axis=1,
     )
 
+    # feature engineering
+    X["FamilySize"] = X["SibSp"] + X["Parch"] + 1
+    X["IsAlone"] = (X["FamilySize"] == 1).astype(int)
+
     # target
     y = X.pop("Survived")
 
