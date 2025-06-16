@@ -6,9 +6,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 import warnings
+import time
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.utils import all_estimators
+from sklearn.preprocessing import StandardScaler
 
 
 from sklearn.linear_model import LogisticRegression
@@ -236,6 +238,7 @@ elif page == pages[2]:
     df = df.drop(["Name", "Sex", "Ticket", "Cabin", "Embarked"], axis=1)
 
     X = df.drop("Survived", axis=1)
+
     y = df["Survived"]
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -271,31 +274,80 @@ elif page == pages[2]:
 ########################################################################################################################
 elif page == pages[3]:
 
+    # features
     X = df.copy()
-    y = X.pop("survived")
+
+    X = X.drop(
+        ["Name", "Ticket", "Cabin"],
+        axis=1,
+    )
+
+    # target
+    y = X.pop("Survived")
 
     # Train/test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
 
+    # gestion des valeurs manquantes
+    age_median = X_train["Age"].median()
+    embarked_mode = X_train["Embarked"].mode()[0]
+
+    X_train["Age"] = X_train["Age"].fillna(age_median)
+    X_train["Embarked"] = X_train["Embarked"].fillna(embarked_mode)
+
+    X_test["Age"] = X_test["Age"].fillna(age_median)
+    X_test["Embarked"] = X_test["Embarked"].fillna(embarked_mode)
+
+    # scaling des variables continues
+    scaler = StandardScaler()
+    X_train[["Age", "Fare"]] = scaler.fit_transform(X_train[["Age", "Fare"]])
+    X_test[["Age", "Fare"]] = scaler.transform(X_test[["Age", "Fare"]])
+
+    # encodage des variables catégorielles
+    categorical_cols = ["Sex", "Embarked"]
+    X_train = pd.get_dummies(X_train, columns=categorical_cols, drop_first=True)
+    X_test = pd.get_dummies(X_test, columns=categorical_cols, drop_first=True)
+    # Réindexation pour garantir le même ordre des colonnes (pas garanti apres oh encodage)
+    X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
+
+    st.dataframe(X_train)
+    st.dataframe(X_test)
+
     # Récupérer tous les classifieurs
     all_classifiers = all_estimators(type_filter="classifier")
 
-    warnings.filterwarnings("ignore")
+    # warnings.filterwarnings("ignore")
 
     results = []
 
     for name, ClfClass in all_classifiers:
         try:
             clf = ClfClass()
+            start_time = time.time()
             clf.fit(X_train, y_train)
             y_pred = clf.predict(X_test)
+            end_time = time.time()
+            duration = round(end_time - start_time, 3)
+
             acc = accuracy_score(y_test, y_pred)
             bal_acc = balanced_accuracy_score(y_test, y_pred)
             results.append(
-                {"Model": name, "Accuracy": acc, "Balanced Accuracy": bal_acc}
+                {
+                    "Model": name,
+                    "Accuracy": acc,
+                    "Balanced Accuracy": bal_acc,
+                    "Time (s)": duration,
+                }
             )
         except Exception:
-            results.append({"Model": name, "Accuracy": None, "Balanced Accuracy": None})
+            results.append(
+                {
+                    "Model": name,
+                    "Accuracy": None,
+                    "Balanced Accuracy": None,
+                    "Time (s)": None,
+                }
+            )
 
     # Afficher sous forme de DataFrame triée par Accuracy décroissante
     df_results = pd.DataFrame(results)
@@ -306,3 +358,4 @@ elif page == pages[3]:
     )
 
     st.dataframe(df_results)
+    # st.write(df_results)
