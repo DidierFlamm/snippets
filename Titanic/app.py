@@ -310,8 +310,8 @@ elif page == pages[3]:
     # Réindexation pour garantir le même ordre des colonnes (pas garanti apres oh encodage)
     X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
 
-    st.dataframe(X_train)
-    st.dataframe(X_test)
+    #st.dataframe(X_train)
+    #st.dataframe(X_test)
 
     # Récupérer tous les classifieurs
     all_classifiers = all_estimators(type_filter="classifier")
