@@ -5,7 +5,12 @@ import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
+import warnings
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
+from sklearn.utils import all_estimators
+
+
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -25,7 +30,7 @@ df.index.name = "Id"
 st.sidebar.title("Sommaire")
 
 
-pages = ["Accueil", "Visualisations", "Prédictions"]
+pages = ["Accueil", "Visualisations", "Prédictions", "Tous les modèles"]
 
 page = st.sidebar.radio("Aller vers", pages)
 
@@ -262,3 +267,42 @@ elif page == pages[2]:
 
     code = """🚧 Bientôt la possibilité d'évaluer la probabilité de survie\nen fonction de vos paramètres 🚧"""
     st.code(code, language="python")
+
+########################################################################################################################
+elif page == pages[3]:
+
+    X = df.copy()
+    y = X.pop("survived")
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+
+    # Récupérer tous les classifieurs
+    all_classifiers = all_estimators(type_filter="classifier")
+
+    warnings.filterwarnings("ignore")
+
+    results = []
+
+    for name, ClfClass in all_classifiers:
+        try:
+            clf = ClfClass()
+            clf.fit(X_train, y_train)
+            y_pred = clf.predict(X_test)
+            acc = accuracy_score(y_test, y_pred)
+            bal_acc = balanced_accuracy_score(y_test, y_pred)
+            results.append(
+                {"Model": name, "Accuracy": acc, "Balanced Accuracy": bal_acc}
+            )
+        except Exception:
+            results.append({"Model": name, "Accuracy": None, "Balanced Accuracy": None})
+
+    # Afficher sous forme de DataFrame triée par Accuracy décroissante
+    df_results = pd.DataFrame(results)
+    df_results = (
+        df_results.dropna()
+        .sort_values(by="Accuracy", ascending=False)
+        .reset_index(drop=True)
+    )
+
+    st.dataframe(df_results)
