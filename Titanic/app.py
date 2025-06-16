@@ -353,7 +353,7 @@ elif page == pages[3]:
     df_results = pd.DataFrame(results)
     df_results = (
         df_results.dropna()
-        .sort_values(by="Accuracy", ascending=False)
+        .sort_values(by="Balanced Accuracy", ascending=False)
         .reset_index(drop=True)
     )
 
