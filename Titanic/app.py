@@ -1,20 +1,50 @@
 # -*- coding: utf-8 -*-
 import os
+import random
 import pandas as pd
 import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
-import warnings
+
+# import warnings
 import time
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, balanced_accuracy_score
+from sklearn.metrics import (
+    accuracy_score,
+    balanced_accuracy_score,
+    classification_report,
+    confusion_matrix,
+)
 from sklearn.utils import all_estimators
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
+
+
+# Options de texte possibles sur streamlit :
+
+# Une ligne vide pour espacer un peu :
+
+# st.write("")
+
+# Séparateur (trait horizontal)
+
+# st.markdown("---")
+
+# Un titre ou sous-titre :
+
+# st.header("Titre de section")
+# st.subheader("Sous-titre")
+
+# Ou du texte en italique ou gras :
+
+# st.markdown("*Texte en italique*")
+# st.markdown("**Texte en gras**")
+
 
 # st.title("Titanic")
 
@@ -25,12 +55,22 @@ img_path = os.path.join(dir_path, "titanic.png")
 # url des données au format .csv
 csv_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/titanic.csv"
 
+# mise en cache de la seed
+if "seed" not in st.session_state:
+    st.session_state.seed = random.randint(0, 2**32 - 1)
+
+seed = st.session_state.seed
+
+# fixer la seed de toutes les fonctions faisant appel à random_state
+random.seed(seed)
+
 
 @st.cache_data
 def load_csv(csv):
     df = pd.read_csv(csv, index_col="PassengerId")
     df.index.name = "Id"
     return df
+
 
 @st.cache_data
 def preprocess_data(df):
@@ -82,13 +122,7 @@ def preprocess_data(df):
 st.sidebar.title("Sommaire")
 
 
-pages = [
-    "Accueil",
-    "Visualisations",
-    "Prédictions",
-    "Pre-processing + Evaluation",
-    "Tuning",
-]
+pages = ["Accueil", "Visualisation", "***", "Evaluation", "Optimisation", "Prédictions"]
 
 page = st.sidebar.radio("Aller vers", pages)
 
@@ -108,7 +142,9 @@ if page == pages[0]:
     st.dataframe(df)
     st.caption("Les valeurs grises indiquent des données manquantes.")
 
-    if st.checkbox("Afficher le nombre de valeurs manquantes"):
+    # if st.checkbox("Afficher le nombre de valeurs manquantes"):
+
+    with st.expander("Afficher / Cacher les valeurs manquantes"):
         # Compter les valeurs manquantes et formater proprement
         missing = df.isna().sum().to_frame(name="Valeurs manquantes")
         missing["%"] = missing["Valeurs manquantes"] / len(df)
@@ -124,6 +160,10 @@ if page == pages[0]:
 
 ###################################################################################### page 1
 elif page == pages[1]:
+
+    st.header("Visualisation")
+
+    df = load_csv(csv_url)
 
     df_display = df.copy()
 
@@ -291,7 +331,7 @@ elif page == pages[1]:
 elif page == pages[2]:
 
     st.write("### Evaluation de la performance")
-
+    df = load_csv(csv_url)
     df = df.dropna()
 
     df = df.drop(["Name", "Sex", "Ticket", "Cabin", "Embarked"], axis=1)
@@ -300,9 +340,7 @@ elif page == pages[2]:
 
     y = df["Survived"]
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     model_choisi = st.selectbox(
         label="Choix du modèle", options=["Regression Log", "Decision Tree", "KNN"]
@@ -333,6 +371,12 @@ elif page == pages[2]:
 ########################################################################################################################
 elif page == pages[3]:
 
+    st.header("Evaluation")
+
+    st.write(
+        "Evaluation de la performance par stratified-KFold Cross Validation des modèles de la librairie scikit-learn"
+    )
+
     df = load_csv(csv_url)
 
     X_train, X_test, y_train, y_test = preprocess_data(df)
@@ -351,7 +395,11 @@ elif page == pages[3]:
     status = st.empty()
     total = len(all_classifiers)
 
-    placeholder=st.empty()
+    placeholder = st.empty()
+
+    start_total_time = time.time()
+
+    skf = StratifiedKFold(n_splits=5, shuffle=True)
 
     for i, (name, ClfClass) in enumerate(all_classifiers):
 
@@ -361,18 +409,30 @@ elif page == pages[3]:
         try:
             clf = ClfClass()
             start_time = time.time()
-            clf.fit(X_train, y_train)
-            y_pred = clf.predict(X_test)
+
+            bal_acc_scores = cross_val_score(
+                clf, X_train, y_train, cv=skf, scoring="balanced_accuracy"
+            )
+
+            roc_auc_scores = f1_scores = cross_val_score(
+                clf, X_train, y_train, cv=skf, scoring="roc_auc"
+            )
+
+            f1_scores = cross_val_score(clf, X_train, y_train, cv=skf, scoring="f1")
+
+            bal_acc_mean = bal_acc_scores.mean()
+            roc_auc_mean = roc_auc_scores.mean()
+            f1_mean = f1_scores.mean()
+
             end_time = time.time()
             duration = int((end_time - start_time) * 1000)
 
-            acc = accuracy_score(y_test, y_pred)
-            bal_acc = balanced_accuracy_score(y_test, y_pred)
             results.append(
                 {
                     "Model": name,
-                    "Accuracy": acc,
-                    "Balanced Accuracy": bal_acc,
+                    "Balanced Accuracy": bal_acc_mean,
+                    "ROC AUC": roc_auc_mean,
+                    "f1-score": f1_mean,
                     "Time (ms)": duration,
                 }
             )
@@ -380,58 +440,96 @@ elif page == pages[3]:
             results.append(
                 {
                     "Model": name,
-                    "Accuracy": None,
-                    "Balanced Accuracy": None,
+                    "Balanced Accuracy": bal_acc_mean,
+                    "ROC AUC": roc_auc_mean,
+                    "f1-score": f1_mean,
                     "Time (ms)": None,
                 }
             )
 
-        
-
-    # Afficher sous forme de DataFrame triée par Accuracy décroissante
+        # Afficher sous forme de DataFrame triée par Accuracy décroissante
         df_results = pd.DataFrame(results)
         df_results = (
-        df_results.dropna()
-        .sort_values(by="Balanced Accuracy", ascending=False)
-        .reset_index(drop=True)
-    )
+            df_results.dropna()
+            .sort_values(by="Balanced Accuracy", ascending=False)
+            .reset_index(drop=True)
+        )
 
         placeholder.dataframe(df_results)
+
+    duration = int(1000 * (time.time() - start_total_time))
+    status.text(f"✅ {len(df_results)} modèles évalués en {duration} ms")
+
+    best_model_name = df_results.iloc[0, 0]
+
+    st.write(
+        f"ℹ️ L'évaluation par CV montre que le meilleur modèle (avec tous les paramètres par défaut et une seed fixée aléatoirement à {seed}) est le {best_model_name} avec une balanced accuracy = {df_results.iloc[0, 1]:.4f}"
+    )
+
+    for name, Clf in all_classifiers:
+        if name == best_model_name:
+            best_model = Clf()
+            break
+
+    best_model.fit(X_train, y_train)
+    y_pred = best_model.predict(X_test)
+
+    # Afficher classification_report sous forme de DataFrame
+    report_dict = classification_report(y_test, y_pred, output_dict=True)
+    df_report = pd.DataFrame(report_dict).transpose()
+    st.write("Classification Report")
+    st.dataframe(df_report)
+
+    # Afficher la matrice de confusion
+    cm = confusion_matrix(y_test, y_pred)
+    df_cm = pd.DataFrame(
+        cm, index=["Actual 0", "Actual 1"], columns=["Pred 0", "Pred 1"]
+    )
+    st.write("Confusion Matrix")
+    st.dataframe(df_cm)
 
 
 #######################################################################################################
 elif page == pages[4]:
+    st.header("Optimisation")
+    st.subheader("Fine tuning des hyperparamètres de 5 modèles")
 
     df = load_csv(csv_url)
 
     X_train, X_test, y_train, y_test = preprocess_data(df)
 
     models = {
-        "GradientBoosting": GradientBoostingClassifier(random_state=42),
-        "SVC": SVC(),
+        "LogisticRegression": LogisticRegression(),
         "KNeighbors": KNeighborsClassifier(),
-        "RandomForest": RandomForestClassifier(random_state=42),
+        "SVC": SVC(probability=True),
+        "RandomForest": RandomForestClassifier(),
+        "GradientBoosting": GradientBoostingClassifier(),
     }
 
     params = {
-        "GradientBoosting": {
-            "n_estimators": [50, 100],
-            "learning_rate": [0.01, 0.1],
-            "max_depth": [3, 5],
+        "LogisticRegression": {
+            "C": [0.01, 0.1, 1, 10],
+            "penalty": ["l2"],
+            "solver": ["lbfgs"],
+        },
+        "KNeighbors": {
+            "n_neighbors": [3, 5, 7],
+            "weights": ["uniform", "distance"],
         },
         "SVC": {
             "C": [0.1, 1, 10],
             "kernel": ["linear", "rbf"],
             "gamma": ["scale", "auto"],
         },
-        "KNeighbors": {
-            "n_neighbors": [3, 5, 7],
-            "weights": ["uniform", "distance"],
-        },
         "RandomForest": {
             "n_estimators": [50, 100],
             "max_depth": [None, 5, 10],
             "min_samples_split": [2, 5],
+        },
+        "GradientBoosting": {
+            "n_estimators": [50, 100],
+            "learning_rate": [0.01, 0.1],
+            "max_depth": [3, 5],
         },
     }
 
@@ -439,7 +537,7 @@ elif page == pages[4]:
     results = []
 
     for name in models:
-        print(f"🔍 GridSearch for {name}...")
+        # print(f"🔍 GridSearch for {name}...")
         grid = GridSearchCV(
             models[name], params[name], cv=5, n_jobs=-1, scoring="balanced_accuracy"
         )
@@ -449,16 +547,19 @@ elif page == pages[4]:
         best_models[name] = best_model
         y_pred = best_model.predict(X_test)
 
-        acc = accuracy_score(y_test, y_pred)
         bal_acc = balanced_accuracy_score(y_test, y_pred)
 
-        st.write(f"✅ {name} - Best Params: {grid.best_params_}")
-        st.write(f"➡️ Accuracy: {acc:.4f}, Balanced Accuracy: {bal_acc:.4f}\n")
+        st.markdown(
+            f"""
+    - **{name}**  
+        Balanced Accuracy : **{bal_acc:.4f}**  
+        Best Params : {grid.best_params_}
+    """
+        )
 
         results.append(
             {
                 "Model": name,
-                "Accuracy": acc,
                 "Balanced Accuracy": bal_acc,
                 "Best Params": grid.best_params_,
             }
@@ -470,23 +571,13 @@ elif page == pages[4]:
             )
         )
 
+        st.markdown("---")
+
+    st.subheader("Résultats du fine tuning")
+
     df_results = (
         pd.DataFrame(results)
         .sort_values(by="Balanced Accuracy", ascending=False)
         .reset_index(drop=True)
     )
     st.dataframe(df_results)
-
-    knn_default = KNeighborsClassifier()
-    knn_default.fit(X_train, y_train)
-    y_pred_default = knn_default.predict(X_test)
-    st.write("Default Accuracy:", accuracy_score(y_test, y_pred_default))
-    st.write(
-        "Default Balanced Accuracy:", balanced_accuracy_score(y_test, y_pred_default)
-    )
-
-    best_knn = KNeighborsClassifier(7, weights="uniform")
-    best_knn.fit(X_train, y_train)
-    y_pred_best = best_knn.predict(X_test)
-    st.write("Best Accuracy:", accuracy_score(y_test, y_pred_best))
-    st.write("Best Balanced Accuracy:", balanced_accuracy_score(y_test, y_pred_best))
