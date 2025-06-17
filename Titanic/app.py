@@ -27,11 +27,12 @@ csv_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads
 
 
 @st.cache_data
-def load_and_preprocess_data(csv):
-
+def load_csv(csv):
     df = pd.read_csv(csv, index_col="PassengerId")
     df.index.name = "Id"
 
+@st.cache_data
+def preprocess_data(df)
     # features
     X = df.copy()
 
@@ -76,8 +77,6 @@ def load_and_preprocess_data(csv):
     return df, X_train, X_test, y_train, y_test
 
 
-df, X_train, X_test, y_train, y_test = load_and_preprocess_data(csv_url)
-
 ###################################################################################### sidebar
 st.sidebar.title("Sommaire")
 
@@ -103,7 +102,10 @@ if page == pages[0]:
         "Prédiction de la survie des passagers du Titanic à partir des [données](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv) d'un échantillon de 891 passagers"
     )
     st.write("")
-    st.dataframe(df.fillna("?"))
+
+    df = load_csv(csv_url)
+    st.dataframe(df)
+    st.caption("Les valeurs grises indiquent des données manquantes.")
 
     if st.checkbox("Afficher le nombre de valeurs manquantes"):
         # Compter les valeurs manquantes et formater proprement
@@ -329,6 +331,8 @@ elif page == pages[2]:
 
 ########################################################################################################################
 elif page == pages[3]:
+
+    X_train, X_test, y_train, y_test = preprocess_data(df)
 
     # st.dataframe(X_train)
     # st.dataframe(X_test)
