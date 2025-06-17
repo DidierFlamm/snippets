@@ -7,7 +7,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix
 
-
+st.set_page_config(page_title="Titanic")
 st.header("Evaluation")
 
 set_seed()

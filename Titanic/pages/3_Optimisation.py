@@ -8,7 +8,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import balanced_accuracy_score
 import pandas as pd
 
-
+st.set_page_config(page_title="Titanic")
 st.header("Optimisation")
 st.subheader("🔧 Fine tuning des hyperparamètres de 5 modèles")
 

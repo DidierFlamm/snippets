@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 
+st.set_page_config(page_title="Titanic")
 st.header("Visualisation")
 
 df = load_csv()

@@ -27,15 +27,16 @@ from utils import set_seed, load_csv
 # st.markdown("*Texte en italique*")
 # st.markdown("**Texte en gras**")
 
-# fige la seed de la session streamlit
-set_seed()
+
+st.set_page_config(page_title="Titanic")
+# définit le nom de l'onglet (doit être la 1ere commande)
+st.title("Titanic")
+
+st.sidebar.write("© 2025 Didier Flamm")
 
 # chemin absolu vers le png
 dir_path = os.path.dirname(os.path.realpath(__file__))
 img_path = os.path.join(dir_path, "assets/titanic.png")
-
-st.set_page_config(page_title="Accueil")
-# facultatif car le script s'appelle Accueil.py
 
 
 st.image(img_path)
@@ -44,6 +45,7 @@ st.markdown(
     "Prédiction de la survie des passagers du Titanic à partir des [données](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv) d'un échantillon de 891 passagers"
 )
 st.write("")
+
 
 df = load_csv()
 st.dataframe(df)
@@ -62,3 +64,6 @@ with st.expander("Afficher les valeurs manquantes"):
         missing.style.set_properties(**{"text-align": "center"}).to_html(),  # type: ignore
         unsafe_allow_html=True,
     )
+
+# fige la seed de la session streamlit
+set_seed()
