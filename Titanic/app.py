@@ -344,6 +344,8 @@ elif page == pages[3]:
     status = st.empty()
     total = len(all_classifiers)
 
+    placeholder=st.empty()
+
     for i, (name, ClfClass) in enumerate(all_classifiers):
 
         try:
@@ -385,7 +387,7 @@ elif page == pages[3]:
         .reset_index(drop=True)
     )
 
-        st.dataframe(df_results)
+        placeholder.dataframe(df_results)
 
 
 #######################################################################################################
