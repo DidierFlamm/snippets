@@ -402,6 +402,10 @@ elif page == pages[3]:
 #######################################################################################################
 elif page == pages[4]:
 
+    df = load_csv(csv_url)
+
+    X_train, X_test, y_train, y_test = preprocess_data(df)
+
     models = {
         "GradientBoosting": GradientBoostingClassifier(random_state=42),
         "SVC": SVC(),
