@@ -37,13 +37,13 @@ df_results = pd.DataFrame()
 
 progress_bar = st.progress(0)
 status = st.empty()
+st.caption(
+    f"Evaluation réalisée par cross validation avec une seed fixée aléatoirement = {st.session_state.seed}"
+)
 total = len(all_classifiers)
 
 placeholder = st.empty()
 
-st.caption(
-    f"Evaluation réalisée par cross validation avec une seed fixée aléatoirement = {st.session_state.seed}"
-)
 
 start_total_time = time.time()
 
