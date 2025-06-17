@@ -10,6 +10,8 @@ import pandas as pd
 
 st.set_page_config(page_title="Titanic")
 st.header("Optimisation")
+st.sidebar.write("© 2025 Didier Flamm")
+
 st.subheader("🔧 Fine tuning des hyperparamètres de 5 modèles")
 
 set_seed()

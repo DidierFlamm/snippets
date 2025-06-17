@@ -6,6 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Titanic")
 st.header("Visualisation")
+st.sidebar.write("© 2025 Didier Flamm")
 
 df = load_csv()
 

@@ -9,6 +9,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 
 st.set_page_config(page_title="Titanic")
 st.header("Evaluation")
+st.sidebar.write("© 2025 Didier Flamm")
 
 set_seed()
 
