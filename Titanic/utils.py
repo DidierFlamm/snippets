@@ -1,11 +1,22 @@
 import os
 import streamlit as st
+import random
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 csv_path = os.path.join(dir_path, "data/titanic.csv")
+
+
+def set_seed():
+    if "seed" not in st.session_state:
+        st.session_state.seed = random.randint(0, 2**32 - 1)
+    seed = st.session_state.seed
+    random.seed(seed)
+    np.random.seed(seed)
 
 
 @st.cache_data
