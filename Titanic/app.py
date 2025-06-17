@@ -378,14 +378,14 @@ elif page == pages[3]:
         status.text(f"{i+1}/{total} - {name}")
 
     # Afficher sous forme de DataFrame triée par Accuracy décroissante
-    df_results = pd.DataFrame(results)
-    df_results = (
+        df_results = pd.DataFrame(results)
+        df_results = (
         df_results.dropna()
         .sort_values(by="Balanced Accuracy", ascending=False)
         .reset_index(drop=True)
     )
 
-    st.dataframe(df_results)
+        st.dataframe(df_results)
 
 
 #######################################################################################################
