@@ -32,7 +32,7 @@ def load_csv(csv):
     df.index.name = "Id"
 
 @st.cache_data
-def preprocess_data(df)
+def preprocess_data(df):
     # features
     X = df.copy()
 
