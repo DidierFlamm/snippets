@@ -23,7 +23,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
 
 
-
 # Options de texte possibles sur streamlit :
 
 # Une ligne vide pour espacer un peu :
@@ -36,12 +35,12 @@ from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_sco
 
 # Titre de l'app
 # st.title("Titre")
-# st.sidebar.title("Titre du side")
 
 # Un titre ou sous-titre :
 
 # st.header("Titre de section")
 # st.subheader("Sous-titre")
+# st.sidebar.title("Titre de section dans le side bar")
 
 # Ou du texte en italique ou gras :
 
@@ -82,24 +81,4 @@ with st.expander("Afficher les valeurs manquantes"):
     st.markdown(
         missing.style.set_properties(**{"text-align": "center"}).to_html(),  # type: ignore
         unsafe_allow_html=True,
-    )
-
-page = 1
-pages = [
-    0,
-    0,
-    0,
-    0,
-    0,
-]
-
-
-
-
-elif page == pages[4]:
-
-    st.header("Prédictions")
-
-    model_choisi = st.selectbox(
-        label="Choix du modèle", options=["Regression Log", "Decision Tree", "KNN"]
     )
