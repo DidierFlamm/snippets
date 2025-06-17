@@ -52,7 +52,7 @@ st.pyplot(fig)
 ####################################################
 
 st.write(
-    "Trois observations présentent un tarif de 512,33, nettement supérieur à la distribution générale. Bien que ces valeurs ne soient pas nécessairement aberrantes, elles sont considérées comme des outliers extrêmes. Afin d’éviter qu’elles ne biaisent les analyses ultérieures, elles sont exclues du jeu de données. L’analyse est ainsi restreinte aux 888 passagers ayant un tarif compris entre 0 et 263."
+    "Trois passagers présentent un tarif de 512.33, nettement supérieur à la distribution générale. Bien que ces valeurs extrêmes ne soient pas nécessairement aberrantes, elles sont considérées comme des outliers et sont exclues du jeu de données afin d'éviter qu’elles ne biaisent les analyses ultérieures. L’analyse est ainsi restreinte aux 888 passagers ayant un tarif compris entre 0 et 263."
 )
 st.write("### Analyse bivariée")
 
