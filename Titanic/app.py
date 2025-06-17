@@ -30,6 +30,7 @@ csv_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads
 def load_csv(csv):
     df = pd.read_csv(csv, index_col="PassengerId")
     df.index.name = "Id"
+    return df
 
 @st.cache_data
 def preprocess_data(df):
@@ -74,7 +75,7 @@ def preprocess_data(df):
     # Réindexation pour garantir le même ordre des colonnes (pas garanti apres oh encodage)
     X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
 
-    return df, X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test
 
 
 ###################################################################################### sidebar
