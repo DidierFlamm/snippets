@@ -1,11 +1,15 @@
+import os
 import streamlit as st
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+csv_path = os.path.join(dir_path, "data/titanic.csv")
+
 
 @st.cache_data
-def load_csv(csv_path):
+def load_csv():
     df = pd.read_csv(csv_path, index_col="PassengerId")
     df.index.name = "Id"
     return df
