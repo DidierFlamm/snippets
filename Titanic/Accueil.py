@@ -1,27 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-import random
-
 import streamlit as st
 from utils import set_seed, load_csv
-
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import plotly.express as px
-
-# import warnings
-import time
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    balanced_accuracy_score,
-    classification_report,
-    confusion_matrix,
-)
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
-
 
 # Options de texte possibles sur streamlit :
 
