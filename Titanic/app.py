@@ -34,6 +34,10 @@ from sklearn.linear_model import LogisticRegression
 
 # st.markdown("---")
 
+# Titre de l'app
+# st.title("Titre")
+# st.sidebar.title("Titre du side")
+
 # Un titre ou sous-titre :
 
 # st.header("Titre de section")
@@ -44,8 +48,6 @@ from sklearn.linear_model import LogisticRegression
 # st.markdown("*Texte en italique*")
 # st.markdown("**Texte en gras**")
 
-
-# st.title("Titanic")
 
 # chemin absolu vers le png et le csv
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -62,66 +64,13 @@ seed = st.session_state.seed
 random.seed(seed)
 
 
-@st.cache_data
-def load_csv(csv_path):
-    df = pd.read_csv(csv_path, index_col="PassengerId")
-    df.index.name = "Id"
-    return df
-
-
-@st.cache_data
-def preprocess_data(df):
-    # features
-    X = df.copy()
-
-    X = X.drop(
-        ["Name", "Ticket", "Cabin"],
-        axis=1,
-    )
-
-    # feature engineering
-    X["Family"] = X["SibSp"] + X["Parch"] + 1
-    X["IsAlone"] = (X["Family"] == 1).astype(int)
-
-    # target
-    y = X.pop("Survived")
-
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
-
-    # gestion des valeurs manquantes
-    age_median = X_train["Age"].median()
-    embarked_mode = X_train["Embarked"].mode()[0]
-
-    X_train["Age"] = X_train["Age"].fillna(age_median)
-    X_train["Embarked"] = X_train["Embarked"].fillna(embarked_mode)
-
-    X_test["Age"] = X_test["Age"].fillna(age_median)
-    X_test["Embarked"] = X_test["Embarked"].fillna(embarked_mode)
-
-    # scaling des variables numériques
-    num_cols = ["Age", "Fare", "SibSp", "Parch", "Pclass", "Family"]
-    scaler = StandardScaler()
-    X_train[num_cols] = scaler.fit_transform(X_train[num_cols])
-    X_test[num_cols] = scaler.transform(X_test[num_cols])
-
-    # encodage des variables catégorielles
-    categorical_cols = ["Sex", "Embarked"]
-    X_train = pd.get_dummies(X_train, columns=categorical_cols, drop_first=True)
-    X_test = pd.get_dummies(X_test, columns=categorical_cols, drop_first=True)
-    # Réindexation pour garantir le même ordre des colonnes (pas garanti apres oh encodage)
-    X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
-
-    return X_train, X_test, y_train, y_test
-
-
 ###################################################################################### sidebar
-st.sidebar.title("Sommaire")
+# st.sidebar.title("Sommaire")
 
 
-pages = ["Accueil", "Visualisation", "Evaluation", "Optimisation", "Prédictions"]
+# pages = ["Accueil", "Visualisation", "Evaluation", "Optimisation", "Prédictions"]
 
-page = st.sidebar.radio("Aller vers", pages)
+# page = st.sidebar.radio("Aller vers", pages)
 
 ###################################################################################### Accueil
 if page == pages[0]:
