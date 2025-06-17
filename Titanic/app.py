@@ -103,7 +103,7 @@ if page == pages[0]:
         "Prédiction de la survie des passagers du Titanic à partir des [données](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv) d'un échantillon de 891 passagers"
     )
     st.write("")
-    st.dataframe(df)
+    st.dataframe(df.fillna("?"))
 
     if st.checkbox("Afficher le nombre de valeurs manquantes"):
         # Compter les valeurs manquantes et formater proprement
