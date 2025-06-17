@@ -348,6 +348,9 @@ elif page == pages[3]:
 
     for i, (name, ClfClass) in enumerate(all_classifiers):
 
+        progress_bar.progress((i + 1) / total)
+        status.text(f"{i+1}/{total} - {name}")
+
         try:
             clf = ClfClass()
             start_time = time.time()
@@ -376,8 +379,7 @@ elif page == pages[3]:
                 }
             )
 
-        progress_bar.progress((i + 1) / total)
-        status.text(f"{i+1}/{total} - {name}")
+        
 
     # Afficher sous forme de DataFrame triée par Accuracy décroissante
         df_results = pd.DataFrame(results)
