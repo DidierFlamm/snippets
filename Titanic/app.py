@@ -11,7 +11,6 @@ import plotly.express as px
 import time
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
-    accuracy_score,
     balanced_accuracy_score,
     classification_report,
     confusion_matrix,
@@ -48,12 +47,10 @@ from sklearn.linear_model import LogisticRegression
 
 # st.title("Titanic")
 
-# chemin absolu vers le dossier où se trouve le script
+# chemin absolu vers le png et le csv
 dir_path = os.path.dirname(os.path.realpath(__file__))
-img_path = os.path.join(dir_path, "titanic.png")
-
-# url des données au format .csv
-csv_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/titanic.csv"
+img_path = os.path.join(dir_path, "assets/titanic.png")
+csv_path = os.path.join(dir_path, "data/titanic.csv")
 
 # mise en cache de la seed
 if "seed" not in st.session_state:
@@ -66,8 +63,8 @@ random.seed(seed)
 
 
 @st.cache_data
-def load_csv(csv):
-    df = pd.read_csv(csv, index_col="PassengerId")
+def load_csv(csv_path):
+    df = pd.read_csv(csv_path, index_col="PassengerId")
     df.index.name = "Id"
     return df
 
@@ -90,7 +87,7 @@ def preprocess_data(df):
     y = X.pop("Survived")
 
     # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
 
     # gestion des valeurs manquantes
     age_median = X_train["Age"].median()
@@ -122,14 +119,12 @@ def preprocess_data(df):
 st.sidebar.title("Sommaire")
 
 
-pages = ["Accueil", "Visualisation", "***", "Evaluation", "Optimisation", "Prédictions"]
+pages = ["Accueil", "Visualisation", "Evaluation", "Optimisation", "Prédictions"]
 
 page = st.sidebar.radio("Aller vers", pages)
 
-###################################################################################### page 0
+###################################################################################### Accueil
 if page == pages[0]:
-
-    # st.write("# Introduction")
 
     st.image(img_path)
     st.write("")
@@ -138,13 +133,11 @@ if page == pages[0]:
     )
     st.write("")
 
-    df = load_csv(csv_url)
+    df = load_csv(csv_path)
     st.dataframe(df)
     st.caption("Les valeurs grises indiquent des données manquantes.")
 
-    # if st.checkbox("Afficher le nombre de valeurs manquantes"):
-
-    with st.expander("Afficher / Cacher les valeurs manquantes"):
+    with st.expander("Afficher les valeurs manquantes"):
         # Compter les valeurs manquantes et formater proprement
         missing = df.isna().sum().to_frame(name="Valeurs manquantes")
         missing["%"] = missing["Valeurs manquantes"] / len(df)
@@ -158,12 +151,12 @@ if page == pages[0]:
             unsafe_allow_html=True,
         )
 
-###################################################################################### page 1
+###################################################################################### Visualisation
 elif page == pages[1]:
 
     st.header("Visualisation")
 
-    df = load_csv(csv_url)
+    df = load_csv(csv_path)
 
     df_display = df.copy()
 
@@ -327,57 +320,19 @@ elif page == pages[1]:
     hist_bis = px.sunburst(df, path=["Sex", "Pclass"])
     st.plotly_chart(hist_bis)
 
-###################################################################################### page 2
+###################################################################################### Evaluation
 elif page == pages[2]:
-
-    st.write("### Evaluation de la performance")
-    df = load_csv(csv_url)
-    df = df.dropna()
-
-    df = df.drop(["Name", "Sex", "Ticket", "Cabin", "Embarked"], axis=1)
-
-    X = df.drop("Survived", axis=1)
-
-    y = df["Survived"]
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-    model_choisi = st.selectbox(
-        label="Choix du modèle", options=["Regression Log", "Decision Tree", "KNN"]
-    )
-
-    def train_model(model_choisi):
-        if model_choisi == "Regression Log":
-            model = LogisticRegression()
-        elif model_choisi == "Decision Tree":
-            model = DecisionTreeClassifier()
-        elif model_choisi == "KNN":
-            model = KNeighborsClassifier()
-        model.fit(X_train, y_train)  # type: ignore
-        score = model.score(X_test, y_test)  # type: ignore
-        return score
-
-    score = train_model(model_choisi)
-    st.write(f"Accuracy : {score:.1%}")
-    st.write(
-        "ℹ️ Accuracy, ou Exactitude en français, c'est le taux de prédictions justes du modèle"
-    )
-
-    st.write("### Prédictions")
-
-    code = """🚧 Bientôt la possibilité d'évaluer la probabilité de survie\nen fonction de vos paramètres 🚧"""
-    st.code(code, language="python")
-
-########################################################################################################################
-elif page == pages[3]:
 
     st.header("Evaluation")
 
+    # Récupérer tous les classifieurs
+    all_classifiers = all_estimators(type_filter="classifier")
+
     st.write(
-        "Evaluation de la performance par stratified-KFold Cross Validation des modèles de la librairie scikit-learn"
+        "Entraînement puis évaluation de la performance par stratified-KFold Cross Validation des modèles de la librairie scikit-learn"
     )
 
-    df = load_csv(csv_url)
+    df = load_csv(csv_path)
 
     X_train, X_test, y_train, y_test = preprocess_data(df)
 
@@ -390,12 +345,18 @@ elif page == pages[3]:
     # warnings.filterwarnings("ignore")
 
     results = []
+    errors = []
+    df_results = pd.DataFrame()
 
     progress_bar = st.progress(0)
     status = st.empty()
     total = len(all_classifiers)
 
     placeholder = st.empty()
+
+    st.caption(
+        f"Evaluation réalisée par cross validation avec une seed fixée aléatoirement = {seed}"
+    )
 
     start_total_time = time.time()
 
@@ -427,49 +388,57 @@ elif page == pages[3]:
             end_time = time.time()
             duration = int((end_time - start_time) * 1000)
 
+            if pd.isna(bal_acc_mean) or pd.isna(roc_auc_mean) or pd.isna(f1_mean):
+                raise ValueError("Scores invalides (nan)")
+
             results.append(
                 {
                     "Model": name,
-                    "Balanced Accuracy": bal_acc_mean,
+                    "Balanced Accuracy (%)": round(100 * bal_acc_mean, 2),
                     "ROC AUC": roc_auc_mean,
                     "f1-score": f1_mean,
                     "Time (ms)": duration,
                 }
             )
-        except Exception:
-            results.append(
-                {
-                    "Model": name,
-                    "Balanced Accuracy": bal_acc_mean,
-                    "ROC AUC": roc_auc_mean,
-                    "f1-score": f1_mean,
-                    "Time (ms)": None,
-                }
-            )
+        except Exception as e:
+            errors.append({"Model": name, "Error": e})
 
         # Afficher sous forme de DataFrame triée par Accuracy décroissante
         df_results = pd.DataFrame(results)
-        df_results = (
-            df_results.dropna()
-            .sort_values(by="Balanced Accuracy", ascending=False)
-            .reset_index(drop=True)
-        )
+        df_results = df_results.sort_values(
+            by="Balanced Accuracy (%)", ascending=False
+        ).reset_index(drop=True)
 
         placeholder.dataframe(df_results)
 
     duration = int(1000 * (time.time() - start_total_time))
-    status.text(f"✅ {len(df_results)} modèles évalués en {duration} ms")
+    status.text(
+        f"ℹ️ {len(all_classifiers)} modèles évalués en {duration} ms (✔️ {len(results)} succès, ❌ {len(errors)} erreurs)"
+    )
+
+    with st.expander("Afficher les erreurs"):
+        st.dataframe(errors)
+
+    st.markdown("---")
 
     best_model_name = df_results.iloc[0, 0]
 
     st.write(
-        f"ℹ️ L'évaluation par CV montre que le meilleur modèle (avec tous les paramètres par défaut et une seed fixée aléatoirement à {seed}) est le {best_model_name} avec une balanced accuracy = {df_results.iloc[0, 1]:.4f}"
+        f"🥇 {best_model_name} présente la balanced accuracy la plus élevée : {df_results.iloc[0, 1]} %"
     )
+
+    best_model = None
 
     for name, Clf in all_classifiers:
         if name == best_model_name:
             best_model = Clf()
             break
+    else:
+        raise ValueError(
+            f"Impossible de trouver {best_model_name} dans all_classifiers"
+        )
+
+    assert best_model is not None, f"best_model_name {best_model_name} non trouvé"
 
     best_model.fit(X_train, y_train)
     y_pred = best_model.predict(X_test)
@@ -477,7 +446,7 @@ elif page == pages[3]:
     # Afficher classification_report sous forme de DataFrame
     report_dict = classification_report(y_test, y_pred, output_dict=True)
     df_report = pd.DataFrame(report_dict).transpose()
-    st.write("Classification Report")
+    st.markdown("- Classification Report")
     st.dataframe(df_report)
 
     # Afficher la matrice de confusion
@@ -485,16 +454,16 @@ elif page == pages[3]:
     df_cm = pd.DataFrame(
         cm, index=["Actual 0", "Actual 1"], columns=["Pred 0", "Pred 1"]
     )
-    st.write("Confusion Matrix")
+    st.markdown("- Classification Report")
     st.dataframe(df_cm)
 
 
-#######################################################################################################
-elif page == pages[4]:
+###################################################################################### Optimisation
+elif page == pages[3]:
     st.header("Optimisation")
-    st.subheader("Fine tuning des hyperparamètres de 5 modèles")
+    st.subheader("🔧 Fine tuning des hyperparamètres de 5 modèles")
 
-    df = load_csv(csv_url)
+    df = load_csv(csv_path)
 
     X_train, X_test, y_train, y_test = preprocess_data(df)
 
@@ -552,8 +521,8 @@ elif page == pages[4]:
         st.markdown(
             f"""
     - **{name}**  
+        Best Params : {grid.best_params_}  
         Balanced Accuracy : **{bal_acc:.4f}**  
-        Best Params : {grid.best_params_}
     """
         )
 
@@ -564,16 +533,12 @@ elif page == pages[4]:
                 "Best Params": grid.best_params_,
             }
         )
-
-        st.dataframe(
-            pd.DataFrame(grid.cv_results_).sort_values(
-                "mean_test_score", ascending=False
-            )
-        )
+        with st.expander("Afficher les détails"):
+            st.dataframe(pd.DataFrame(grid.cv_results_))
 
         st.markdown("---")
 
-    st.subheader("Résultats du fine tuning")
+    st.subheader("🎯 Résultats")
 
     df_results = (
         pd.DataFrame(results)
@@ -581,3 +546,11 @@ elif page == pages[4]:
         .reset_index(drop=True)
     )
     st.dataframe(df_results)
+
+elif page == pages[4]:
+
+    st.header("Prédictions")
+
+    model_choisi = st.selectbox(
+        label="Choix du modèle", options=["Regression Log", "Decision Tree", "KNN"]
+    )
