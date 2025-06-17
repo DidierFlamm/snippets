@@ -11,10 +11,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.utils import all_estimators
 from sklearn.preprocessing import StandardScaler
-
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 
 # st.title("Titanic")
@@ -24,15 +23,72 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 img_path = os.path.join(dir_path, "titanic.png")
 
 # url des données au format .csv
-raw_csv = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/titanic.csv"
-df = pd.read_csv(raw_csv, index_col="PassengerId")
-df.index.name = "Id"
+csv_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/titanic.csv"
+
+
+@st.cache_data
+def load_and_preprocess_data(csv):
+
+    df = pd.read_csv(csv, index_col="PassengerId")
+    df.index.name = "Id"
+
+    # features
+    X = df.copy()
+
+    X = X.drop(
+        ["Name", "Ticket", "Cabin"],
+        axis=1,
+    )
+
+    # feature engineering
+    X["Family"] = X["SibSp"] + X["Parch"] + 1
+    X["IsAlone"] = (X["Family"] == 1).astype(int)
+
+    # target
+    y = X.pop("Survived")
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    # gestion des valeurs manquantes
+    age_median = X_train["Age"].median()
+    embarked_mode = X_train["Embarked"].mode()[0]
+
+    X_train["Age"] = X_train["Age"].fillna(age_median)
+    X_train["Embarked"] = X_train["Embarked"].fillna(embarked_mode)
+
+    X_test["Age"] = X_test["Age"].fillna(age_median)
+    X_test["Embarked"] = X_test["Embarked"].fillna(embarked_mode)
+
+    # scaling des variables numériques
+    num_cols = ["Age", "Fare", "SibSp", "Parch", "Pclass", "Family"]
+    scaler = StandardScaler()
+    X_train[num_cols] = scaler.fit_transform(X_train[num_cols])
+    X_test[num_cols] = scaler.transform(X_test[num_cols])
+
+    # encodage des variables catégorielles
+    categorical_cols = ["Sex", "Embarked"]
+    X_train = pd.get_dummies(X_train, columns=categorical_cols, drop_first=True)
+    X_test = pd.get_dummies(X_test, columns=categorical_cols, drop_first=True)
+    # Réindexation pour garantir le même ordre des colonnes (pas garanti apres oh encodage)
+    X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
+
+    return df, X_train, X_test, y_train, y_test
+
+
+df, X_train, X_test, y_train, y_test = load_and_preprocess_data(csv_url)
 
 ###################################################################################### sidebar
 st.sidebar.title("Sommaire")
 
 
-pages = ["Accueil", "Visualisations", "Prédictions", "Tous les modèles"]
+pages = [
+    "Accueil",
+    "Visualisations",
+    "Prédictions",
+    "Pre-processing + Evaluation",
+    "Tuning",
+]
 
 page = st.sidebar.radio("Aller vers", pages)
 
@@ -274,48 +330,8 @@ elif page == pages[2]:
 ########################################################################################################################
 elif page == pages[3]:
 
-    # features
-    X = df.copy()
-
-    X = X.drop(
-        ["Name", "Ticket", "Cabin"],
-        axis=1,
-    )
-
-    # feature engineering
-    X["FamilySize"] = X["SibSp"] + X["Parch"] + 1
-    X["IsAlone"] = (X["FamilySize"] == 1).astype(int)
-
-    # target
-    y = X.pop("Survived")
-
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
-
-    # gestion des valeurs manquantes
-    age_median = X_train["Age"].median()
-    embarked_mode = X_train["Embarked"].mode()[0]
-
-    X_train["Age"] = X_train["Age"].fillna(age_median)
-    X_train["Embarked"] = X_train["Embarked"].fillna(embarked_mode)
-
-    X_test["Age"] = X_test["Age"].fillna(age_median)
-    X_test["Embarked"] = X_test["Embarked"].fillna(embarked_mode)
-
-    # scaling des variables continues
-    scaler = StandardScaler()
-    X_train[["Age", "Fare"]] = scaler.fit_transform(X_train[["Age", "Fare"]])
-    X_test[["Age", "Fare"]] = scaler.transform(X_test[["Age", "Fare"]])
-
-    # encodage des variables catégorielles
-    categorical_cols = ["Sex", "Embarked"]
-    X_train = pd.get_dummies(X_train, columns=categorical_cols, drop_first=True)
-    X_test = pd.get_dummies(X_test, columns=categorical_cols, drop_first=True)
-    # Réindexation pour garantir le même ordre des colonnes (pas garanti apres oh encodage)
-    X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
-
-    #st.dataframe(X_train)
-    #st.dataframe(X_test)
+    # st.dataframe(X_train)
+    # st.dataframe(X_test)
 
     # Récupérer tous les classifieurs
     all_classifiers = all_estimators(type_filter="classifier")
@@ -324,20 +340,19 @@ elif page == pages[3]:
 
     results = []
 
-
     progress_bar = st.progress(0)
     status = st.empty()
     total = len(all_classifiers)
 
     for i, (name, ClfClass) in enumerate(all_classifiers):
-     
+
         try:
             clf = ClfClass()
             start_time = time.time()
             clf.fit(X_train, y_train)
             y_pred = clf.predict(X_test)
             end_time = time.time()
-            duration = round(end_time - start_time, 3)
+            duration = int((end_time - start_time) * 1000)
 
             acc = accuracy_score(y_test, y_pred)
             bal_acc = balanced_accuracy_score(y_test, y_pred)
@@ -346,7 +361,7 @@ elif page == pages[3]:
                     "Model": name,
                     "Accuracy": acc,
                     "Balanced Accuracy": bal_acc,
-                    "Time (s)": duration,
+                    "Time (ms)": duration,
                 }
             )
         except Exception:
@@ -355,7 +370,7 @@ elif page == pages[3]:
                     "Model": name,
                     "Accuracy": None,
                     "Balanced Accuracy": None,
-                    "Time (s)": None,
+                    "Time (ms)": None,
                 }
             )
 
@@ -371,4 +386,92 @@ elif page == pages[3]:
     )
 
     st.dataframe(df_results)
-    # st.write(df_results)
+
+
+#######################################################################################################
+elif page == pages[4]:
+
+    models = {
+        "GradientBoosting": GradientBoostingClassifier(random_state=42),
+        "SVC": SVC(),
+        "KNeighbors": KNeighborsClassifier(),
+        "RandomForest": RandomForestClassifier(random_state=42),
+    }
+
+    params = {
+        "GradientBoosting": {
+            "n_estimators": [50, 100],
+            "learning_rate": [0.01, 0.1],
+            "max_depth": [3, 5],
+        },
+        "SVC": {
+            "C": [0.1, 1, 10],
+            "kernel": ["linear", "rbf"],
+            "gamma": ["scale", "auto"],
+        },
+        "KNeighbors": {
+            "n_neighbors": [3, 5, 7],
+            "weights": ["uniform", "distance"],
+        },
+        "RandomForest": {
+            "n_estimators": [50, 100],
+            "max_depth": [None, 5, 10],
+            "min_samples_split": [2, 5],
+        },
+    }
+
+    best_models = {}
+    results = []
+
+    for name in models:
+        print(f"🔍 GridSearch for {name}...")
+        grid = GridSearchCV(
+            models[name], params[name], cv=5, n_jobs=-1, scoring="balanced_accuracy"
+        )
+        grid.fit(X_train, y_train)
+
+        best_model = grid.best_estimator_
+        best_models[name] = best_model
+        y_pred = best_model.predict(X_test)
+
+        acc = accuracy_score(y_test, y_pred)
+        bal_acc = balanced_accuracy_score(y_test, y_pred)
+
+        st.write(f"✅ {name} - Best Params: {grid.best_params_}")
+        st.write(f"➡️ Accuracy: {acc:.4f}, Balanced Accuracy: {bal_acc:.4f}\n")
+
+        results.append(
+            {
+                "Model": name,
+                "Accuracy": acc,
+                "Balanced Accuracy": bal_acc,
+                "Best Params": grid.best_params_,
+            }
+        )
+
+        st.dataframe(
+            pd.DataFrame(grid.cv_results_).sort_values(
+                "mean_test_score", ascending=False
+            )
+        )
+
+    df_results = (
+        pd.DataFrame(results)
+        .sort_values(by="Balanced Accuracy", ascending=False)
+        .reset_index(drop=True)
+    )
+    st.dataframe(df_results)
+
+    knn_default = KNeighborsClassifier()
+    knn_default.fit(X_train, y_train)
+    y_pred_default = knn_default.predict(X_test)
+    st.write("Default Accuracy:", accuracy_score(y_test, y_pred_default))
+    st.write(
+        "Default Balanced Accuracy:", balanced_accuracy_score(y_test, y_pred_default)
+    )
+
+    best_knn = KNeighborsClassifier(7, weights="uniform")
+    best_knn.fit(X_train, y_train)
+    y_pred_best = best_knn.predict(X_test)
+    st.write("Best Accuracy:", accuracy_score(y_test, y_pred_best))
+    st.write("Best Balanced Accuracy:", balanced_accuracy_score(y_test, y_pred_best))
