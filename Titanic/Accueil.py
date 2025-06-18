@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import streamlit as st
-from utils import set_seed, load_csv
+from utils import load_csv
 
 # Options de texte possibles sur streamlit :
 
@@ -64,6 +64,3 @@ with st.expander("Afficher les valeurs manquantes"):
         missing.style.set_properties(**{"text-align": "center"}).to_html(),  # type: ignore
         unsafe_allow_html=True,
     )
-
-# fige la seed de la session streamlit
-set_seed()
