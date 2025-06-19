@@ -14,7 +14,8 @@ st.image(
     caption="Le Titanic à Southampton le 10 avril 1912.",
 )
 
-st.logo("assets/logo.webp", size="Large")
+dir_path = os.path.dirname(os.path.realpath(__file__))
+st.logo(os.path.join(dir_path, "assets/logo.webp"), size="large")
 st.write("")
 st.markdown(
     """Le naufrage du [Titanic](https://fr.wikipedia.org/wiki/Titanic) est l’un des naufrages les plus célèbres de l’histoire. Le 15 avril 1912, lors de son voyage inaugural, le RMS Titanic, pourtant considéré comme “insubmersible”, a coulé après une collision avec un iceberg. Malheureusement, il n’y avait pas assez de canots de sauvetage pour toutes les personnes à bord, ce qui a entraîné la mort de 1502 des 2224 passagers et membres d’équipage.  
