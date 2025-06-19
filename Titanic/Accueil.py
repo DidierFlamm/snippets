@@ -95,7 +95,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 st.logo(os.path.join(dir_path, "assets/logo.webp"), size="large")
 st.sidebar.markdown(
     """
-    <div style='text-align: center; margin-top: 500px;'>
+    <div style='text-align: center; margin-top: 250px;'>
         <a href= "https://share.streamlit.io/user/didierflamm" target="_blank">
         <img src="https://github.com/DidierFlamm/DidierFlamm/blob/main/maigal.png?raw=true" width='120'/>
     </div>
