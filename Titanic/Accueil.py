@@ -9,29 +9,40 @@ import pandas as pd
 st.set_page_config(page_title="Titanic")
 
 st.title("Titanic")
-
-st.image("assets/titanic.webp")
-st.logo("assets/logo.webp")
-
-st.markdown(
-    "Prédiction de la survie des passagers du Titanic à partir des [données](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv) d'un échantillon de 891 passagers"
+st.image(
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/RMS_Titanic_3.jpg/960px-RMS_Titanic_3.jpg",
+    caption="Le Titanic à Southampton le 10 avril 1912.",
 )
+
+st.logo("assets/logo.webp", size="Large")
 st.write("")
+st.markdown(
+    """Le naufrage du [Titanic](https://fr.wikipedia.org/wiki/Titanic) est l’un des naufrages les plus célèbres de l’histoire. Le 15 avril 1912, lors de son voyage inaugural, le RMS Titanic, pourtant considéré comme “insubmersible”, a coulé après une collision avec un iceberg. Malheureusement, il n’y avait pas assez de canots de sauvetage pour toutes les personnes à bord, ce qui a entraîné la mort de 1502 des 2224 passagers et membres d’équipage.  
+Bien que le hasard ait joué un rôle dans les chances de survie, certains groupes de personnes semblaient avoir plus de chances de survivre que d’autres ("les femmes et les enfants d'abord" ?).  
+
+L'objectif de ce projet est de construire un modèle prédictif pour répondre à la question « Quels types de personnes avaient le plus de chances de survivre ? », en s’appuyant sur les [données](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv) disponibles de 891 passagers (nom, âge, sexe, classe socio-économique, etc...) reprises ci-dessous."""
+)
 
 
 st.sidebar.markdown(
     """
-    <div style="text-align: center;">
-        <a href="https://share.streamlit.io/user/didierflamm" target="_blank">
-            <img src="assets/maigal.png" width="150">
-        </a>
+    <div style='text-align: center;'>
+        <a href= "https://share.streamlit.io/user/didierflamm" target="_blank">
+        <img src="https://github.com/DidierFlamm/DidierFlamm/blob/main/maigal.png?raw=true" width='120'/>
     </div>
     """,
     unsafe_allow_html=True,
 )
-st.sidebar.image("assets/maigal.png", width=150)
 
-st.sidebar.caption("© 2025 Didier Flamm")
+st.sidebar.markdown(
+    """
+    <div style='text-align: center; font-size: small; color: gray;'>
+    © 2025 Didier Flamm
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 df = load_csv()
 st.dataframe(df)
@@ -52,7 +63,7 @@ with st.expander("Afficher les valeurs manquantes"):
     )
 
 st.markdown("---")
-st.write("Définition des variables :")
+st.write("Note concernant les variables :")
 df = pd.DataFrame(
     {
         "Variable": [
@@ -66,7 +77,7 @@ df = pd.DataFrame(
         ],
         "Définition": [
             "Survie du passager",
-            "Classe du billet",
+            "Classe du billet (indicateur du statut socio-économique)",
             "Nombre de frères, Sœurs, époux ou épouse à bord du Titanic",
             "Nombre de parents et enfants à bord du Titanic",
             "Tarif de la cabine (pour l'ensemble des occupants)",
@@ -75,7 +86,7 @@ df = pd.DataFrame(
         ],
         "Valeurs": [
             "0 = Non, 1 = Oui",
-            "1 = 1ère (haut de gamme, \n2 = 2ème (moyen de gamme), 3 = 3ème (bas de gamme))",
+            "1 = 1ère (classe aisée), 2 = 2ème (classe moyenne), 3 = 3ème (classe populaire))",
             "",
             "",
             "",
@@ -87,4 +98,4 @@ df = pd.DataFrame(
 
 st.table(df.set_index("Variable"))
 
-st.image("assets/route.png")
+st.image("https://upload.wikimedia.org/wikipedia/commons/a/af/TitanicRoute.svg")
