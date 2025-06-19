@@ -97,7 +97,7 @@ st.sidebar.markdown(
     """
     <div style='text-align: center; margin-top: 100px;'>
         <a href= "https://share.streamlit.io/user/didierflamm" target="_blank">
-        <img src="https://github.com/DidierFlamm/DidierFlamm/blob/main/logo.png?raw=true" width='120'/>
+        <img src="https://github.com/DidierFlamm/DidierFlamm/blob/main/logo.webp?raw=true" width='150'/>
     </div>
     """,
     unsafe_allow_html=True,
