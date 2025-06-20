@@ -4,15 +4,13 @@ import streamlit as st
 from utils import load_csv
 import pandas as pd
 
-
-# définit le nom de l'onglet (doit être la 1ere commande streamlit du script)
 st.set_page_config(page_title="Titanic")
 
 st.title("Titanic")
 
 st.image(
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/RMS_Titanic_3.jpg/960px-RMS_Titanic_3.jpg",
-    caption="Le Titanic à Southampton le 10 avril 1912.",
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Titanic_in_color.png/960px-Titanic_in_color.png",
+    caption="RMS Titanic au départ de Southampton le 10 avril 1912.",
 )
 
 
@@ -86,18 +84,6 @@ st.markdown(
     """
     <div style='text-align: center; font-size: small; color: gray; margin-top: 50px;'>
     © 2025 Didier Flamm
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-st.logo(os.path.join(dir_path, "assets/logo.webp"), size="large")
-st.sidebar.markdown(
-    """
-    <div style='text-align: center; margin-top: 100px;'>
-        <a href= "https://share.streamlit.io/user/didierflamm" target="_blank">
-        <img src="https://github.com/DidierFlamm/DidierFlamm/blob/main/logo.webp?raw=true" width='150'/>
     </div>
     """,
     unsafe_allow_html=True,

@@ -1,4 +1,3 @@
-import os
 import streamlit as st
 import random
 import numpy as np
@@ -7,8 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-csv_path = os.path.join(dir_path, "data/titanic.csv")
+url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
 
 
 def set_seed():
@@ -21,8 +19,8 @@ def set_seed():
 
 @st.cache_data
 def load_csv():
-    df = pd.read_csv(csv_path, index_col="PassengerId")
-    df.index.name = "Id"
+    df = pd.read_csv(url, index_col="PassengerId")
+    df.index.name = "#"
     return df
 
 

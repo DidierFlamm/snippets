@@ -7,9 +7,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix
 
-st.set_page_config(page_title="Titanic")
+st.set_page_config(page_title="Titanic - Evaluation")
 st.header("Evaluation")
-st.sidebar.write("© 2025 Didier Flamm")
 
 set_seed()
 
@@ -107,7 +106,7 @@ status.text(
 with st.expander("Afficher les erreurs"):
     st.dataframe(errors)
 
-st.markdown("---")
+st.divider()
 
 best_model_name = df_results.iloc[0, 0]
 
@@ -140,3 +139,13 @@ cm = confusion_matrix(y_test, y_pred)
 df_cm = pd.DataFrame(cm, index=["Actual 0", "Actual 1"], columns=["Pred 0", "Pred 1"])
 st.markdown("- Confusion Matrix")
 st.dataframe(df_cm)
+
+
+st.markdown(
+    """
+    <div style='text-align: center; font-size: small; color: gray; margin-top: 50px;'>
+    © 2025 Didier Flamm
+    </div>
+    """,
+    unsafe_allow_html=True,
+)

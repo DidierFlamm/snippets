@@ -8,9 +8,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import balanced_accuracy_score
 import pandas as pd
 
-st.set_page_config(page_title="Titanic")
+st.set_page_config(page_title="Titanic - Optimisation")
 st.header("Optimisation")
-st.sidebar.write("© 2025 Didier Flamm")
 
 st.subheader("🔧 Fine tuning des hyperparamètres de 5 modèles")
 
@@ -88,7 +87,7 @@ for name in models:
     with st.expander("Afficher les détails"):
         st.dataframe(pd.DataFrame(grid.cv_results_))
 
-    st.markdown("---")
+    st.divider()
 
 st.subheader("🎯 Résultats")
 
@@ -98,3 +97,13 @@ df_results = (
     .reset_index(drop=True)
 )
 st.dataframe(df_results)
+
+
+st.markdown(
+    """
+    <div style='text-align: center; font-size: small; color: gray; margin-top: 50px;'>
+    © 2025 Didier Flamm
+    </div>
+    """,
+    unsafe_allow_html=True,
+)

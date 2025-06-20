@@ -4,9 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 
-st.set_page_config(page_title="Titanic")
+st.set_page_config(page_title="Titanic - Visualisation")
 st.header("Visualisation")
-st.sidebar.write("© 2025 Didier Flamm")
 
 df = load_csv()
 
@@ -171,3 +170,13 @@ st.plotly_chart(hist)
 
 hist_bis = px.sunburst(df, path=["Sex", "Pclass"])
 st.plotly_chart(hist_bis)
+
+
+st.markdown(
+    """
+    <div style='text-align: center; font-size: small; color: gray; margin-top: 50px;'>
+    © 2025 Didier Flamm
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
